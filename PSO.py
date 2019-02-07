@@ -70,7 +70,6 @@ def give_N_weight_chromosomes(n, no_of_input_neurons, no_of_hidden_neurons1, no_
         W = initialize_weight_chromosome(no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2,
                                          no_of_output_neurons)
         weights.append(W)
-
     return np.array(weights)
 
 
@@ -129,7 +128,6 @@ def model(x_train, x_test, y_train, y_test, no_of_input_neurons, no_of_hidden_ne
             velocities[i] = w * velocities[i] + c1 * random.random() * (
                     local_best_swarm1[1] - weights[i]) + c2 * random.random() * (best[1] - weights[i])
             weights[i] = (dt * velocities[i]) + weights[i]
-
             w = wMin - i * (wMax - wMin) / Max_iteration
 
         # swarm 2
@@ -137,7 +135,6 @@ def model(x_train, x_test, y_train, y_test, no_of_input_neurons, no_of_hidden_ne
             velocities[i] = w * velocities[i] + c1 * random.random() * (
                     local_best_swarm2[1] - weights[i]) + c2 * random.random() * (best[1] - weights[i])
             weights[i] = (dt * velocities[i]) + weights[i]
-
             w = wMin - i * (wMax - wMin) / Max_iteration
 
         # swarm 3
@@ -147,7 +144,7 @@ def model(x_train, x_test, y_train, y_test, no_of_input_neurons, no_of_hidden_ne
             weights[i] = (dt * velocities[i]) + weights[i]
             w = wMin - i * (wMax - wMin) / Max_iteration
 
-    print("Final")
+    print("Final . . .")
     output, curr_error = generate_output_and_error(x_train, y_train, best[1])
     print(output)
     y_pred = threshold(copy.deepcopy(output))
