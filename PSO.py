@@ -42,7 +42,15 @@ def initialize_weight_chromosome(no_of_input_neurons, no_of_hidden_neurons1, no_
     return np.array(W)
 
 
+def softmax(A):
+    expA = np.exp(A)
+    return expA / expA.sum()
+
+
 def generate_output_and_error(X, Y, W):
+    # A = np.array([0.4276565 , 1.62361559])
+    # print(softmax(A))
+    # exit()
     wh1 = W[0]
     bh1 = W[1]
     wh2 = W[2]
@@ -59,6 +67,8 @@ def generate_output_and_error(X, Y, W):
 
     inputForOutputLayer = np.dot(outputHidden2, wo) + bo
     output = sig(inputForOutputLayer)  # final output layer's output
+    print(softmax(output))
+    exit()
     curr_error = abs(np.sum(np.power(output - Y, 2))) / len(X)
     return output, curr_error
 
@@ -78,9 +88,9 @@ def model(x_train, x_test, y_train, y_test, no_of_input_neurons, no_of_hidden_ne
     # initialize random population
     weights = give_N_weight_chromosomes(30, no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2,
                                         no_of_output_neurons)
-    c1 = 2  # const
-    c2 = 2  # const
-    w = 2  # inertia weight
+    c1 = 1.48  # const
+    c2 = 1.48  # const
+    w = 0.729  # inertia weight
     wMax = 0.9  # max inertia weight
     wMin = 0.5  # min inertia weight
     dt = 0.8  # Velocity retardation factor
@@ -145,7 +155,7 @@ def model(x_train, x_test, y_train, y_test, no_of_input_neurons, no_of_hidden_ne
             w = wMin - i * (wMax - wMin) / Max_iteration
 
     print("Final . . .")
-    output, curr_error = generate_output_and_error(x_train, y_train, best[1])
-    print(output)
+    output, curr_error = generate_output_and_error(x_test, y_test, best[1])
+    # print(output)
     y_pred = threshold(copy.deepcopy(output))
-    print("Accuracy: ", accuracy_score(y_train, y_pred))
+    print("Accuracy: ", accuracy_score(y_test, y_pred))
