@@ -10,10 +10,10 @@ import PSO
 import random
 
 
-def inbuilt_algo(X, Y):
+def inbuilt_algo(x_train, x_test, y_train, y_test):
     clf = MLPClassifier(max_iter=10000)
-    clf.fit(X, Y)
-    print("Inbuilt", accuracy_score(Y, clf.predict(X)))
+    clf.fit(x_train, y_train)
+    print("Inbuilt", accuracy_score(y_test, clf.predict(x_test)))
 
 
 def get_dataset_ready(filename):
@@ -22,7 +22,7 @@ def get_dataset_ready(filename):
     X = data[:, 0:len(data[0]) - 1]
     Y = data[:, len(data[0]) - 1]
     Y = np.reshape(Y, newshape=(len(Y), 1))
-    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.3, random_state=0)
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=0)
     return x_train, x_test, y_train, y_test
 
 
@@ -39,10 +39,11 @@ if __name__ == '__main__':
     y_train = [[0], [1], [1], [1]]
     x_train = np.array(x_train)
     y_train = np.array(y_train)
-    x_test = 0
-    y_test = 0
+    x_test = x_train
+    y_test = y_train
     # x_train, x_test, y_train, y_test = get_dataset_ready('Parkinsons.csv')
     # x_train, x_test = scale(x_train, x_test)
-    PSO.model(x_train, x_test, y_train, y_test, len(x_train[0]), 2, 2, 1)
+    # inbuilt_algo(x_train, x_test, y_train, y_test)
+    PSO.model(x_train, x_test, y_train, y_test, len(x_train[0]), 2, 2, 2)
     print("Execution Time:", time.time() - start_time)
     exit()
