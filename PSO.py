@@ -14,16 +14,6 @@ def sig(z):
     return 1 / (1 + np.exp(z))
 
 
-def threshold(z):
-    for i in range(z.shape[0]):
-        for j in range(z.shape[1]):
-            if z[i][j] > 0.5:
-                z[i][j] = 1
-            else:
-                z[i][j] = 0
-    return z
-
-
 def initialize_weight_chromosome(no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2,
                                  no_of_output_neurons):
     # for Hidden layer 1
@@ -44,13 +34,10 @@ def initialize_weight_chromosome(no_of_input_neurons, no_of_hidden_neurons1, no_
 
 def softmax(A):
     expA = np.exp(A)
-    return expA / expA.sum()
+    return expA / np.sum(expA, axis=1, keepdims=True)
 
 
 def generate_output_and_error(X, Y, W):
-    # A = np.array([0.4276565 , 1.62361559])
-    # print(softmax(A))
-    # exit()
     wh1 = W[0]
     bh1 = W[1]
     wh2 = W[2]
@@ -66,10 +53,15 @@ def generate_output_and_error(X, Y, W):
     outputHidden2 = sig(inputHidden2)  # hidden layer output 2
 
     inputForOutputLayer = np.dot(outputHidden2, wo) + bo
-    output = sig(inputForOutputLayer)  # final output layer's output
-    print(softmax(output))
-    exit()
-    curr_error = abs(np.sum(np.power(output - Y, 2))) / len(X)
+
+    # final output layer's output
+    output = softmax(inputForOutputLayer)
+
+    # calculate error
+    curr_error = np.sum(-Y * np.log(output))
+    print(output)
+    print(output.argmax(axis=1))
+    print(curr_error)
     return output, curr_error
 
 
@@ -94,7 +86,7 @@ def model(x_train, x_test, y_train, y_test, no_of_input_neurons, no_of_hidden_ne
     wMax = 0.9  # max inertia weight
     wMin = 0.5  # min inertia weight
     dt = 0.8  # Velocity retardation factor
-    Max_iteration = 10000
+    Max_iteration = 1000
     best = [100000, -1]  # error, weight
 
     velocities = [0 for i in range(30)]
@@ -145,6 +137,7 @@ def model(x_train, x_test, y_train, y_test, no_of_input_neurons, no_of_hidden_ne
             velocities[i] = w * velocities[i] + c1 * random.random() * (
                     local_best_swarm2[1] - weights[i]) + c2 * random.random() * (best[1] - weights[i])
             weights[i] = (dt * velocities[i]) + weights[i]
+            weights[i] = (dt * velocities[i]) + weights[i]
             w = wMin - i * (wMax - wMin) / Max_iteration
 
         # swarm 3
@@ -156,6 +149,6 @@ def model(x_train, x_test, y_train, y_test, no_of_input_neurons, no_of_hidden_ne
 
     print("Final . . .")
     output, curr_error = generate_output_and_error(x_test, y_test, best[1])
-    # print(output)
-    y_pred = threshold(copy.deepcopy(output))
-    print("Accuracy: ", accuracy_score(y_test, y_pred))
+    print(output)
+    print(output.argmax(axis=1))
+    print("Accuracy: ", accuracy_score(y_test.argmax(axis=1), output.argmax(axis=1)))
