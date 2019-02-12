@@ -7,7 +7,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import StandardScaler
 import GOA
 import PSO
-import random
+import settings
 
 
 def inbuilt_algo(x_train, x_test, y_train, y_test):
@@ -24,6 +24,7 @@ def get_dataset_ready(filename):
     Y = np.reshape(Y, newshape=(len(Y), 1))
     # one hot labeling classes needs to be stated as 0 1 2 . . .
     unique_classes = np.unique(Y)
+    settings.no_of_classes = len(unique_classes)
     one_hot_labels = np.zeros((Y.shape[0], len(unique_classes)))
     for i in range(one_hot_labels.shape[0]):
         one_hot_labels[i, int(Y[i, 0])] = 1
@@ -39,19 +40,25 @@ def scale(x_train, x_test):
     return x_train, x_test
 
 
+def verify(x_test, y_test, optimal_solution):
+    print("\n\nOPTIMAL SOLUTION:\n", optimal_solution)
+    feature_set = optimal_solution[1][0]
+    updated_x_test = GOA.updated_X(x_test, feature_set)
+    output, error = PSO.generate_output_and_error(updated_x_test, y_test, optimal_solution[2])
+    print("Error:", error)
+    print("Prediction:", output.argmax(axis=1))
+
+
 if __name__ == '__main__':
     start_time = time.time()
-    # print(np.log(0))
     x_train = [[0, 0], [0, 1], [1, 0], [1, 1]]
     y_train = [[1, 0], [0, 1], [0, 1], [0, 1]]
     x_train = np.array(x_train)
     y_train = np.array(y_train)
     x_test = x_train
     y_test = y_train
-    # x_train, x_test, y_train, y_test = get_dataset_ready('car_evaluation.csv')
-    # x_train, x_test = scale(x_train, x_test)
-    # inbuilt_algo(x_train, x_test, y_train, y_test)
-    GOA.algorithm(x_train, x_test, y_train, y_test)
-    # unique_classes = 4  # that equals no. of output neurons
-    # PSO.model(x_train, x_test, y_train, y_test, len(x_train[0]), 2, 2, unique_classes)
+    x_train, x_test, y_train, y_test = get_dataset_ready('car_evaluation.csv')
+    x_train, x_test = scale(x_train, x_test)
+    optimal_solution = GOA.algorithm(x_train, y_train)  # accuracy, grasshopper, corresponding_weights
+    verify(x_test, y_test, optimal_solution)
     print("Execution Time:", time.time() - start_time)

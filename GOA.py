@@ -2,8 +2,8 @@ import copy
 import math
 import random
 import numpy as np
-from sklearn.metrics import accuracy_score
 import PSO
+import settings
 
 minimum_no_of_hidden_neuron = 2
 
@@ -13,10 +13,11 @@ def give_a_random_solution(no_of_features):
     max_number_of_hidden_neuron = 2 * (no_of_features + 1)
     vector = [[0 for i in range(no_of_features)]]
     n = math.ceil(math.log(max_number_of_hidden_neuron, 2))
-
-    no_of_selected_features = random.randint(np.ceil(no_of_features / 2), no_of_features)
+    if settings.minimum_no_of_present_features is None:
+        settings.minimum_no_of_present_features = np.ceil(no_of_features / 2)
+    no_of_selected_features = random.randint(settings.minimum_no_of_present_features, no_of_features)
     count = 0
-    print("no_of_selected_features", no_of_selected_features)
+    # print("no_of_selected_features", no_of_selected_features)
     while count < no_of_selected_features:
         current_set = random.randint(1, no_of_features) - 1
         if vector[0][current_set] != 1:
@@ -54,6 +55,28 @@ def give_a_random_solution(no_of_features):
     current_set = random.randint(0, 3)
     vector.append(np.array(tf_spool[current_set]))
     return np.array(vector)
+
+
+def reset_grasshopper(gh):
+    Count = 0
+    for i in gh[0]:
+        if i == 1:
+            Count += 1
+    if Count >= settings.minimum_no_of_present_features:
+        return gh
+    Count = 0
+    l = []
+    for i in range(len(gh[0])):
+        if gh[0][i] == 0:
+            l.append(i)
+        else:
+            Count += 1
+    while Count < settings.minimum_no_of_present_features:
+        index = random.randint(0, len(l) - 1)
+        if gh[0][l[index]] == 0:
+            gh[0][l[index]] = 1
+            Count += 1
+    return gh
 
 
 def give_N_random_solutions(n, no_of_features):
@@ -149,11 +172,8 @@ def normalize_distance(gh, bgh):  # gh = curr_search_agent, bgh = best_search_ag
     if int(gh[2], 2) < minimum_no_of_hidden_neuron:
         gh[2] = save2
 
-    print("NORMALIZED . . .")
-    for i in gh[0]:
-        if i == 1:
-            return gh
-    gh[0][random.randint(0, len(gh[0]) - 1)] = 1
+    # ensuring minimum no. of features should be selected
+    gh = reset_grasshopper(gh)
     return gh
 
 
@@ -196,11 +216,8 @@ def update_position(gh, change_value):
     if int(gh[2], 2) < minimum_no_of_hidden_neuron:
         gh[2] = backup_HL2
 
-    # check if feature_vector is all zero?
-    for i in gh[0]:
-        if i == 1:
-            return gh
-    gh[0][random.randint(0, len(gh[0]) - 1)] = 1
+    # ensuring minimum no. of features should be selected
+    gh = reset_grasshopper(gh)
     return gh
 
 
@@ -208,8 +225,8 @@ def guess_weight():
     pass
 
 
-def algorithm(x_train, x_test, y_train, y_test):
-    N = 3
+def algorithm(x_train, y_train):
+    N = settings.goa_population_size
     grasshoppers = give_N_random_solutions(N, len(x_train[0]))
     # A' = [[list([0, 1]) '101' '110' array([0, 0]) array([0, 0])]
     print(N, "random Solutions generated")
@@ -219,24 +236,25 @@ def algorithm(x_train, x_test, y_train, y_test):
     for i in range(len(grasshoppers)):
         no_of_hidden_neurons1 = int(grasshoppers[i][1], 2)
         no_of_hidden_neurons2 = int(grasshoppers[i][2], 2)
+        tf1 = grasshoppers[i][3]
+        tf2 = grasshoppers[i][4]
         print("Running PSO on", i, "solution:")
         print(grasshoppers[i])
         updated_x_train = updated_X(x_train, grasshoppers[i][0])
-        updated_x_test = updated_X(x_test, grasshoppers[i][0])
-        accuracy, corresponding_weights = PSO.model(updated_x_train, updated_x_test, y_train, y_test,
+        accuracy, corresponding_weights = PSO.model(updated_x_train, y_train,
                                                     no_of_input_neurons=len(updated_x_train[0]),
                                                     no_of_hidden_neurons1=no_of_hidden_neurons1,
-                                                    no_of_hidden_neurons2=no_of_hidden_neurons2, no_of_output_neurons=2)
-
+                                                    no_of_hidden_neurons2=no_of_hidden_neurons2,
+                                                    no_of_output_neurons=settings.no_of_classes, tf1=tf1, tf2=tf2)
         print(accuracy, "\n")
         if accuracy > best_sol[0]:
             best_sol[0] = accuracy
-            best_sol[1] = grasshoppers[i]
-            best_sol[2] = corresponding_weights
+            best_sol[1] = copy.deepcopy(grasshoppers[i])
+            best_sol[2] = copy.deepcopy(corresponding_weights)
 
-    print("Initial Best", best_sol, "\n\n")
+    print("Initial Best", best_sol[0:1], "\n\n")
     # exit()
-    max_it = 15
+    max_it = settings.goa_max_iteration
     cMax = 1
     cMin = 0.00004
     l = 2
@@ -254,9 +272,6 @@ def algorithm(x_train, x_test, y_train, y_test):
                 if j != i:
                     # Normalize
                     grasshoppers[i] = normalize_distance(grasshoppers[i], grasshoppers[j])
-                    # print("#######")
-                    # exit()
-                    # print(grasshoppers[i])
                     # grasshoppers[j] = normalize_distance(grasshoppers[j], grasshoppers[i])
 
                     dist = distance(grasshoppers[j], grasshoppers[i])
@@ -278,41 +293,30 @@ def algorithm(x_train, x_test, y_train, y_test):
 
             no_of_hidden_neurons1 = int(grasshoppers[i][1], 2)
             no_of_hidden_neurons2 = int(grasshoppers[i][2], 2)
+            tf1 = grasshoppers[i][3]
+            tf2 = grasshoppers[i][4]
             updated_x_train = updated_X(x_train, grasshoppers[i][0])
-            updated_x_test = updated_X(x_test, grasshoppers[i][0])
-            accuracy, corresponding_weights = PSO.model(updated_x_train, updated_x_test, y_train, y_test,
+            accuracy, corresponding_weights = PSO.model(updated_x_train, y_train,
                                                         no_of_input_neurons=len(updated_x_train[0]),
                                                         no_of_hidden_neurons1=no_of_hidden_neurons1,
                                                         no_of_hidden_neurons2=no_of_hidden_neurons2,
-                                                        no_of_output_neurons=2)
+                                                        no_of_output_neurons=settings.no_of_classes, tf1=tf1, tf2=tf2)
 
             if accuracy > best_sol[0]:
                 best_sol[0] = accuracy
-                best_sol[1] = grasshoppers[i]
-                best_sol[2] = corresponding_weights
-                print("\n\nBEST UPDATED: ", best_sol, "\n\n")
+                best_sol[1] = copy.deepcopy(grasshoppers[i])
+                best_sol[2] = copy.deepcopy(corresponding_weights)
+                print("\n\nBEST UPDATED: ", best_sol[0:1], "\n\n")
 
             print("----------------------------------------------------------------------------->")
-            print("Best accuracy so far", best_sol)
+            print("Best accuracy so far", best_sol[0:1])
         l += 1
 
-    print("\n\nOptimal Solution:\n", best_sol)
-    print("Final verification . . .")
-    verify(x_test, y_test, best_sol[1], best_sol[2])
-
-
-def verify(x_test, y_test, architecture, weights):
-    output, error = PSO.generate_output_and_error(updated_X(x_test, architecture[0]), y_test, weights)
-    print(output, error)
+    return best_sol
 
 
 if __name__ == '__main__':
-    v = give_N_random_solutions(20, 2)
+    v = [[1, 0, 0, 1, 0, 0]]
+    settings.minimum_no_of_present_features = 2
+    v = reset_grasshopper(v)
     print(v)
-    # gh = v[0]
-    # nh = update_position(copy.deepcopy(gh), 6)
-    # print(distance(gh, nh))
-    # print(gh)
-    # print(nh)
-    # gh = normalize_distance(gh, nh)
-    # print(distance(gh, nh))

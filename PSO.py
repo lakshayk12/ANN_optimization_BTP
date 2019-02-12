@@ -8,6 +8,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.neural_network import MLPClassifier
 import time
 from numba import jit
+import settings
 
 
 @jit(nopython=True)
@@ -38,7 +39,19 @@ def softmax(A):
     return expA / np.sum(expA, axis=1, keepdims=True)
 
 
-def generate_output_and_error(X, Y, W):
+def relu(x):
+    return x * (x > 0)
+
+
+def tanh(x):
+    return np.tanh(x)
+
+
+def arctan(x):
+    return np.arctan(x)
+
+
+def generate_output_and_error(X, Y, W, tf1, tf2):
     wh1 = W[0]
     bh1 = W[1]
     wh2 = W[2]
@@ -48,10 +61,28 @@ def generate_output_and_error(X, Y, W):
     output0 = X  # output of input layer
 
     inputHidden1 = np.dot(output0, wh1) + bh1
-    outputHidden1 = sig(inputHidden1)  # hidden layer output 1
+
+    # hidden layer output 1
+    if tf1[0] == 0 and tf1[1] == 0:
+        outputHidden1 = sig(inputHidden1)
+    if tf1[0] == 0 and tf1[1] == 1:
+        outputHidden1 = tanh(inputHidden1)
+    if tf1[0] == 1 and tf1[1] == 0:
+        outputHidden1 = relu(inputHidden1)
+    if tf1[0] == 1 and tf1[1] == 1:
+        outputHidden1 = arctan(inputHidden1)
 
     inputHidden2 = np.dot(outputHidden1, wh2) + bh2
-    outputHidden2 = sig(inputHidden2)  # hidden layer output 2
+
+    # hidden layer output 2
+    if tf2[0] == 0 and tf2[1] == 0:
+        outputHidden2 = sig(inputHidden2)
+    if tf2[0] == 0 and tf2[1] == 1:
+        outputHidden2 = tanh(inputHidden2)
+    if tf2[0] == 1 and tf2[1] == 0:
+        outputHidden2 = relu(inputHidden2)
+    if tf2[0] == 1 and tf2[1] == 1:
+        outputHidden2 = arctan(inputHidden2)
 
     inputForOutputLayer = np.dot(outputHidden2, wo) + bo
 
@@ -73,10 +104,11 @@ def give_N_weight_chromosomes(n, no_of_input_neurons, no_of_hidden_neurons1, no_
     return np.array(weights)
 
 
-def model(x_train, x_test, y_train, y_test, no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2,
-          no_of_output_neurons):
+def model(x_train, y_train, no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2, no_of_output_neurons,
+          tf1, tf2):
     # initialize random population
-    weights = give_N_weight_chromosomes(30, no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2,
+    weights = give_N_weight_chromosomes(settings.pso_population_size, no_of_input_neurons, no_of_hidden_neurons1,
+                                        no_of_hidden_neurons2,
                                         no_of_output_neurons)
     c1 = 1.48  # const
     c2 = 1.48  # const
@@ -84,7 +116,7 @@ def model(x_train, x_test, y_train, y_test, no_of_input_neurons, no_of_hidden_ne
     wMax = 0.9  # max inertia weight
     wMin = 0.5  # min inertia weight
     dt = 0.8  # Velocity retardation factory
-    Max_iteration = 100
+    Max_iteration = settings.pso_max_iteration
     best = [math.inf, -1]  # error, weights
 
     velocities = [0 for i in range(30)]
@@ -95,33 +127,33 @@ def model(x_train, x_test, y_train, y_test, no_of_input_neurons, no_of_hidden_ne
     for it in range(Max_iteration):
         # swarm 1
         for i in range(0, 10):
-            output, curr_error = generate_output_and_error(x_train, y_train, weights[i])
+            output, curr_error = generate_output_and_error(x_train, y_train, weights[i], tf1, tf2)
             if curr_error < local_best_swarm1[0]:
                 local_best_swarm1[0] = curr_error
-                local_best_swarm1[1] = weights[i]
+                local_best_swarm1[1] = copy.deepcopy(weights[i])
 
         for i in range(10, 20):
-            output, curr_error = generate_output_and_error(x_train, y_train, weights[i])
+            output, curr_error = generate_output_and_error(x_train, y_train, weights[i], tf1, tf2)
             if curr_error < local_best_swarm2[0]:
                 local_best_swarm2[0] = curr_error
-                local_best_swarm2[1] = weights[i]
+                local_best_swarm2[1] = copy.deepcopy(weights[i])
 
         for i in range(20, 30):
-            output, curr_error = generate_output_and_error(x_train, y_train, weights[i])
+            output, curr_error = generate_output_and_error(x_train, y_train, weights[i], tf1, tf2)
             if curr_error < local_best_swarm3[0]:
                 local_best_swarm3[0] = curr_error
-                local_best_swarm3[1] = weights[i]
+                local_best_swarm3[1] = copy.deepcopy(weights[i])
 
         # update global best of all swarms
         if local_best_swarm1[0] < best[0]:
             best[0] = local_best_swarm1[0]
-            best[1] = local_best_swarm1[1]
+            best[1] = copy.deepcopy(local_best_swarm1[1])
         if local_best_swarm2[0] < best[0]:
             best[0] = local_best_swarm2[0]
-            best[1] = local_best_swarm2[1]
+            best[1] = copy.deepcopy(local_best_swarm2[1])
         if local_best_swarm3[0] < best[0]:
             best[0] = local_best_swarm3[0]
-            best[1] = local_best_swarm3[1]
+            best[1] = copy.deepcopy(local_best_swarm3[1])
         # swarm 1
         for i in range(0, 10):
             velocities[i] = w * velocities[i] + c1 * random.random() * (
@@ -144,9 +176,6 @@ def model(x_train, x_test, y_train, y_test, no_of_input_neurons, no_of_hidden_ne
             weights[i] = (dt * velocities[i]) + weights[i]
             w = wMin - i * (wMax - wMin) / Max_iteration
 
-    print("Final . . .")
-    output, curr_error = generate_output_and_error(x_test, y_test, best[1])
-    accuracy = accuracy_score(y_test.argmax(axis=1), output.argmax(axis=1))
-    # print("Accuracy: ", accuracy)
-    # return output.argmax(axis=1)  # y_pred
-    return accuracy, best[1] # accuracy and best_weights
+    output, curr_error = generate_output_and_error(x_train, y_train, best[1], tf1, tf2)  # best[1] is optimal weights
+    accuracy = accuracy_score(y_train.argmax(axis=1), output.argmax(axis=1))
+    return accuracy, best[1]  # accuracy and best_weights
