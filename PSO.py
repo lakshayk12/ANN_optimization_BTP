@@ -3,6 +3,7 @@ from sklearn import datasets
 import math
 import random
 import copy
+import math
 from sklearn.metrics import accuracy_score
 from sklearn.neural_network import MLPClassifier
 import time
@@ -59,9 +60,6 @@ def generate_output_and_error(X, Y, W):
 
     # calculate error
     curr_error = np.sum(-Y * np.log(output))
-    print(output)
-    print(output.argmax(axis=1))
-    print(curr_error)
     return output, curr_error
 
 
@@ -85,14 +83,14 @@ def model(x_train, x_test, y_train, y_test, no_of_input_neurons, no_of_hidden_ne
     w = 0.729  # inertia weight
     wMax = 0.9  # max inertia weight
     wMin = 0.5  # min inertia weight
-    dt = 0.8  # Velocity retardation factor
-    Max_iteration = 1000
-    best = [100000, -1]  # error, weight
+    dt = 0.8  # Velocity retardation factory
+    Max_iteration = 100
+    best = [math.inf, -1]  # error, weights
 
     velocities = [0 for i in range(30)]
-    local_best_swarm1 = [1000, -1]  # error, weight
-    local_best_swarm2 = [1000, -1]  # error, weight
-    local_best_swarm3 = [1000, -1]  # error, weight
+    local_best_swarm1 = [math.inf, -1]  # error, weight
+    local_best_swarm2 = [math.inf, -1]  # error, weight
+    local_best_swarm3 = [math.inf, -1]  # error, weight
 
     for it in range(Max_iteration):
         # swarm 1
@@ -124,7 +122,6 @@ def model(x_train, x_test, y_train, y_test, no_of_input_neurons, no_of_hidden_ne
         if local_best_swarm3[0] < best[0]:
             best[0] = local_best_swarm3[0]
             best[1] = local_best_swarm3[1]
-
         # swarm 1
         for i in range(0, 10):
             velocities[i] = w * velocities[i] + c1 * random.random() * (
@@ -149,6 +146,7 @@ def model(x_train, x_test, y_train, y_test, no_of_input_neurons, no_of_hidden_ne
 
     print("Final . . .")
     output, curr_error = generate_output_and_error(x_test, y_test, best[1])
-    print(output)
-    print(output.argmax(axis=1))
-    print("Accuracy: ", accuracy_score(y_test.argmax(axis=1), output.argmax(axis=1)))
+    accuracy = accuracy_score(y_test.argmax(axis=1), output.argmax(axis=1))
+    # print("Accuracy: ", accuracy)
+    # return output.argmax(axis=1)  # y_pred
+    return accuracy, best[1] # accuracy and best_weights

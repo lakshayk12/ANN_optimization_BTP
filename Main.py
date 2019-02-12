@@ -48,9 +48,10 @@ if __name__ == '__main__':
     y_train = np.array(y_train)
     x_test = x_train
     y_test = y_train
-    # x_train, x_test, y_train, y_test = get_dataset_ready('Parkinsons.csv')
+    # x_train, x_test, y_train, y_test = get_dataset_ready('car_evaluation.csv')
     # x_train, x_test = scale(x_train, x_test)
     # inbuilt_algo(x_train, x_test, y_train, y_test)
-    unique_classes = 2  # that equals no. of output neurons
-    PSO.model(x_train, x_test, y_train, y_test, len(x_train[0]), 2, 2, unique_classes)
+    GOA.algorithm(x_train, x_test, y_train, y_test)
+    # unique_classes = 4  # that equals no. of output neurons
+    # PSO.model(x_train, x_test, y_train, y_test, len(x_train[0]), 2, 2, unique_classes)
     print("Execution Time:", time.time() - start_time)
