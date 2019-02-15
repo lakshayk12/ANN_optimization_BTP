@@ -25,6 +25,7 @@ def get_dataset_ready(filename):
     # one hot labeling classes needs to be stated as 0 1 2 . . .
     unique_classes = np.unique(Y)
     settings.no_of_classes = len(unique_classes)
+    print(settings.no_of_classes, "Classes.")
     one_hot_labels = np.zeros((Y.shape[0], len(unique_classes)))
     for i in range(one_hot_labels.shape[0]):
         one_hot_labels[i, int(Y[i, 0])] = 1
@@ -44,7 +45,8 @@ def verify(x_test, y_test, optimal_solution):
     print("\n\nOPTIMAL SOLUTION:\n", optimal_solution)
     feature_set = optimal_solution[1][0]
     updated_x_test = GOA.updated_X(x_test, feature_set)
-    output, error = PSO.generate_output_and_error(updated_x_test, y_test, optimal_solution[2])
+    output, error = PSO.generate_output_and_error(updated_x_test, y_test, optimal_solution[2], optimal_solution[1][3],
+                                                  optimal_solution[1][4])
     print("Error:", error)
     print("Prediction:", output.argmax(axis=1))
 
@@ -53,6 +55,7 @@ if __name__ == '__main__':
     start_time = time.time()
     x_train = [[0, 0], [0, 1], [1, 0], [1, 1]]
     y_train = [[1, 0], [0, 1], [0, 1], [0, 1]]
+    settings.no_of_classes = 2
     x_train = np.array(x_train)
     y_train = np.array(y_train)
     x_test = x_train
