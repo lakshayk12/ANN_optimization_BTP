@@ -52,14 +52,14 @@ def verify(x_test, y_test, optimal_solution):
 
 
 if __name__ == '__main__':
-    old_dim = (2, 5)
-    new_dim = (5, 20)
-    old_matrix = np.random.randn(old_dim[0], old_dim[1])
-    print("OLD :\n", old_matrix)
-    previous_gh = [[1, 0, 1, 1, 1]]
-    gh = [[0, 0, 1, 0, 1]]
-    GOA.make_similar_matrix(old_dim, new_dim, old_matrix, gh, previous_gh)
-    exit()
+    # old_dim = (4, 10)
+    # new_dim = (5, 2)
+    # old_matrix = np.random.randn(old_dim[0], old_dim[1])
+    # print("OLD :\n", old_matrix)
+    # previous_gh = [[1, 1, 1, 1, 0]]
+    # gh = [[1, 1, 1, 1, 1]]
+    # GOA.make_similar_matrix(old_dim, new_dim, old_matrix, gh, previous_gh)
+    # exit()
 
     start_time = time.time()
     x_train = [[0, 0], [0, 1], [1, 0], [1, 1]]
@@ -69,6 +69,7 @@ if __name__ == '__main__':
     y_train = np.array(y_train)
     x_test = x_train
     y_test = y_train
+
     x_train, x_test, y_train, y_test = get_dataset_ready('car_evaluation.csv')
     x_train, x_test = scale(x_train, x_test)
     optimal_solution = GOA.algorithm(x_train, y_train)  # accuracy, grasshopper, corresponding_weights

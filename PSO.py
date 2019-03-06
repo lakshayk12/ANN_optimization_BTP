@@ -95,21 +95,28 @@ def generate_output_and_error(X, Y, W, tf1, tf2):
 
 
 def give_N_weight_chromosomes(n, no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2,
-                              no_of_output_neurons):
+                              no_of_output_neurons, guessed_weights):
     weights = []
-    for i in range(n):
-        W = initialize_weight_chromosome(no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2,
-                                         no_of_output_neurons)
-        weights.append(W)
+    if guessed_weights is not None:
+        # print("Weights were guessed already!")
+        for i in range(n):
+            weights.append(
+                initialize_weight_chromosome(no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2,
+                                             no_of_output_neurons) + guessed_weights)
+    else:
+        for i in range(n):
+            W = initialize_weight_chromosome(no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2,
+                                             no_of_output_neurons)
+            weights.append(W)
     return np.array(weights)
 
 
 def model(x_train, y_train, no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2, no_of_output_neurons,
-          tf1, tf2):
+          tf1, tf2, guessed_weights=None):
     # initialize random population
     weights = give_N_weight_chromosomes(settings.pso_population_size, no_of_input_neurons, no_of_hidden_neurons1,
                                         no_of_hidden_neurons2,
-                                        no_of_output_neurons)
+                                        no_of_output_neurons, guessed_weights)
     c1 = 1.48  # const
     c2 = 1.48  # const
     w = 0.729  # inertia weight
