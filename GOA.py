@@ -221,8 +221,78 @@ def update_position(gh, change_value):
     return gh
 
 
-def guess_weight():
-    pass
+def make_similar_matrix(old_dim, new_dim, old_matrix, gh, previous_gh):
+    new_mat = np.ones(new_dim)
+    # 1 0 1 1
+    # 1 1 1 1
+    j = 0
+    k = 0
+    if new_dim[0] >= old_dim[0]:
+        for i in range(len(gh[0])):
+            if gh[0][i] == 1 and gh[0][i] == previous_gh[0][i]:
+                new_mat[j] = old_matrix[k, 0:new_dim[1]]
+                j += 1
+                k += 1
+            elif gh[0][i] == 1 and previous_gh[0][i] == 0:
+                if j == 0:
+                    new_mat[j] = np.random.randn(1, new_dim[1])
+                else:
+                    new_mat[j] = np.mean(new_mat[0:j, :], axis=0, keepdims=True)
+                j += 1
+
+    j = k = 0  # k old mat_index & j new mat
+    if new_dim[0] < old_dim[0]:
+        for i in range(len(gh[0])):
+            if gh[0][i] == 1 and gh[0][i] == previous_gh[0][i]:
+                new_mat[j] = old_matrix[k, 0:new_dim[1]]
+                j += 1
+                k += 1
+            elif gh[0][i] == 0 and previous_gh[0][i] == 1:
+                k += 1
+            elif gh[0][i] == 1 and previous_gh[0][i] == 0:
+                if j == 0:
+                    new_mat[j] = np.random.randn(1, new_dim[1])
+                else:
+                    new_mat[j] = np.mean(new_mat[0:j, :], axis=0, keepdims=True)
+                j += 1
+
+        print("NEW:\n", new_mat)
+        exit()
+
+
+def guess_weight(gh, previous_gh, old_weights):  # here, gh is new grasshopper
+    print("IN GUESS WEIGHTS. . .")
+    print(gh)
+    new_weights = []
+    old_wh1_dim = old_weights[0].shape
+    old_bh1_dim = old_weights[1].shape
+    old_wh2_dim = old_weights[2].shape
+    old_bh2_dim = old_weights[3].shape
+    old_wo_dim = old_weights[4].shape
+    old_bo_dim = old_weights[5].shape
+    print(old_wh1_dim, old_bh1_dim, old_wh2_dim, old_bh2_dim, old_wo_dim, old_bo_dim)
+
+    # Targets weights
+    new_no_of_inputs = 0
+    for each in gh[0]:
+        if each == 1:
+            new_no_of_inputs += 1
+    new_no_of_hl1 = int(gh[1], 2)
+    new_no_of_hl2 = int(gh[2], 2)
+    new_no_of_outputs = settings.no_of_classes
+
+    new_wh1_dim = (new_no_of_inputs, new_no_of_hl1)
+    new_bh1_dim = (1, new_no_of_hl1)
+    new_wh2_dim = (new_no_of_hl1, new_no_of_hl2)
+    new_bh2_dim = (1, new_no_of_hl2)
+    new_wo_dim = (new_no_of_hl2, new_no_of_outputs)
+    new_bo_dim = (1, new_no_of_outputs)
+    print(new_wh1_dim, new_bh1_dim, new_wh2_dim, new_bh2_dim, new_wo_dim, new_bo_dim)
+    # wh1
+    new_wh1 = make_similar_matrix(old_wh1_dim, new_wh1_dim, old_weights, gh, previous_gh)
+
+    exit()
+    return None
 
 
 def algorithm(x_train, y_train):
@@ -232,6 +302,8 @@ def algorithm(x_train, y_train):
     print(N, "random Solutions generated")
     print(grasshoppers)
     # exit()
+    previous_weights_of_ghs = []  # saves previous weights of ith grasshopper
+    previous_ghs = []  # saves previous ith grasshopper
     best_sol = [0, -1, -1]  # accuracy, grasshopper, corresponding_weights
     for i in range(len(grasshoppers)):
         no_of_hidden_neurons1 = int(grasshoppers[i][1], 2)
@@ -246,6 +318,8 @@ def algorithm(x_train, y_train):
                                                     no_of_hidden_neurons1=no_of_hidden_neurons1,
                                                     no_of_hidden_neurons2=no_of_hidden_neurons2,
                                                     no_of_output_neurons=settings.no_of_classes, tf1=tf1, tf2=tf2)
+        previous_ghs.append(copy.deepcopy(grasshoppers[i]))
+        previous_weights_of_ghs.append(copy.deepcopy(corresponding_weights))
         print(accuracy, "\n")
         if accuracy > best_sol[0]:
             best_sol[0] = accuracy
@@ -277,7 +351,6 @@ def algorithm(x_train, y_train):
                     dist = distance(grasshoppers[j], grasshoppers[i])
                     Xi += c * ((ub - lb) / 2) * (0.5 * np.exp(-dist / 1.5) - np.exp(-dist))
                 j += 1
-                # print("heere----->>")
 
             # print(Xi)
             Xi *= c
@@ -287,6 +360,7 @@ def algorithm(x_train, y_train):
             Xi += Td
             # print("Final Xi", Xi)
             change_value = np.ceil(Xi)
+
             grasshoppers[i] = update_position(grasshoppers[i], abs(change_value))
 
             print("current GOA grasshopper----------------------------------------->>>", grasshoppers[i])
@@ -296,6 +370,9 @@ def algorithm(x_train, y_train):
             tf1 = grasshoppers[i][3]
             tf2 = grasshoppers[i][4]
             updated_x_train = updated_X(x_train, grasshoppers[i][0])
+            # guess initial weights from previous weights
+            guessed_weights = guess_weight(grasshoppers[i], copy.deepcopy(previous_ghs[i]),
+                                           copy.deepcopy(previous_weights_of_ghs[i]))
             accuracy, corresponding_weights = PSO.model(updated_x_train, y_train,
                                                         no_of_input_neurons=len(updated_x_train[0]),
                                                         no_of_hidden_neurons1=no_of_hidden_neurons1,

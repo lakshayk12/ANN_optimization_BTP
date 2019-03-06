@@ -52,6 +52,15 @@ def verify(x_test, y_test, optimal_solution):
 
 
 if __name__ == '__main__':
+    old_dim = (2, 5)
+    new_dim = (5, 20)
+    old_matrix = np.random.randn(old_dim[0], old_dim[1])
+    print("OLD :\n", old_matrix)
+    previous_gh = [[1, 0, 1, 1, 1]]
+    gh = [[0, 0, 1, 0, 1]]
+    GOA.make_similar_matrix(old_dim, new_dim, old_matrix, gh, previous_gh)
+    exit()
+
     start_time = time.time()
     x_train = [[0, 0], [0, 1], [1, 0], [1, 1]]
     y_train = [[1, 0], [0, 1], [0, 1], [0, 1]]
