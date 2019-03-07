@@ -301,13 +301,13 @@ def guess_weight(gh, previous_gh, old_weights):  # here, gh is new grasshopper
 
     # wh1
     new_wh1 = make_similar_matrix(old_wh1_dim, new_wh1_dim, old_weights[0], gh, previous_gh)
-    new_bh1_dim = np.random.randn(new_bh1_dim[0], new_bh1_dim[1])
-    new_wh2_dim = np.random.randn(new_no_of_hl1, new_no_of_hl2)
-    new_bh2_dim = np.random.randn(1, new_no_of_hl2)
-    new_wo_dim = np.random.randn(new_no_of_hl2, new_no_of_outputs)
-    new_bo_dim = np.random.randn(1, new_no_of_outputs)
+    new_bh1 = np.random.randn(new_bh1_dim[0], new_bh1_dim[1]) + np.mean(old_weights[1])
+    new_wh2 = np.random.randn(new_no_of_hl1, new_no_of_hl2) + np.mean(old_weights[2])
+    new_bh2 = np.random.randn(1, new_no_of_hl2) + np.mean(old_weights[3])
+    new_wo = np.random.randn(new_no_of_hl2, new_no_of_outputs) + np.mean(old_weights[4])
+    new_bo = np.random.randn(1, new_no_of_outputs) + np.mean(old_weights[5])
 
-    return np.array([new_wh1, new_bh1_dim, new_wh2_dim, new_bh2_dim, new_wo_dim, new_bo_dim])
+    return np.array([new_wh1, new_bh1, new_wh2, new_bh2, new_wo, new_bo])
 
 
 def algorithm(x_train, y_train):
