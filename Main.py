@@ -75,3 +75,4 @@ if __name__ == '__main__':
     optimal_solution = GOA.algorithm(x_train, y_train)  # accuracy, grasshopper, corresponding_weights
     verify(x_test, y_test, optimal_solution)
     print("Execution Time:", time.time() - start_time)
+    exit(0)
