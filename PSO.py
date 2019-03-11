@@ -52,6 +52,9 @@ def arctan(x):
 
 
 def generate_output_and_error(X, Y, W, tf1, tf2):
+    if type(W) == int:
+        print(W)
+        exit()
     wh1 = W[0]
     bh1 = W[1]
     wh2 = W[2]
@@ -125,6 +128,8 @@ def model(x_train, y_train, no_of_input_neurons, no_of_hidden_neurons1, no_of_hi
     dt = 0.8  # Velocity retardation factory
     Max_iteration = settings.pso_max_iteration
     best = [math.inf, -1]  # error, weights
+    first_run = True
+    best_first_update = True
 
     velocities = [0 for i in range(30)]
     local_best_swarm1 = [math.inf, -1]  # error, weight
@@ -135,32 +140,41 @@ def model(x_train, y_train, no_of_input_neurons, no_of_hidden_neurons1, no_of_hi
         # swarm 1
         for i in range(0, 10):
             output, curr_error = generate_output_and_error(x_train, y_train, weights[i], tf1, tf2)
-            if curr_error < local_best_swarm1[0]:
+            if first_run or curr_error < local_best_swarm1[0]:
                 local_best_swarm1[0] = curr_error
                 local_best_swarm1[1] = copy.deepcopy(weights[i])
+                first_run = False
 
         for i in range(10, 20):
             output, curr_error = generate_output_and_error(x_train, y_train, weights[i], tf1, tf2)
-            if curr_error < local_best_swarm2[0]:
+            if first_run or curr_error < local_best_swarm2[0]:
                 local_best_swarm2[0] = curr_error
                 local_best_swarm2[1] = copy.deepcopy(weights[i])
+                first_run = False
 
         for i in range(20, 30):
             output, curr_error = generate_output_and_error(x_train, y_train, weights[i], tf1, tf2)
-            if curr_error < local_best_swarm3[0]:
+            if first_run or curr_error < local_best_swarm3[0]:
                 local_best_swarm3[0] = curr_error
                 local_best_swarm3[1] = copy.deepcopy(weights[i])
+                first_run = False
 
         # update global best of all swarms
-        if local_best_swarm1[0] < best[0]:
+        if best_first_update or local_best_swarm1[0] < best[0]:
             best[0] = local_best_swarm1[0]
             best[1] = copy.deepcopy(local_best_swarm1[1])
-        if local_best_swarm2[0] < best[0]:
+            best_first_update = False
+
+        if best_first_update or local_best_swarm2[0] < best[0]:
             best[0] = local_best_swarm2[0]
             best[1] = copy.deepcopy(local_best_swarm2[1])
-        if local_best_swarm3[0] < best[0]:
+            best_first_update = False
+
+        if best_first_update or local_best_swarm3[0] < best[0]:
             best[0] = local_best_swarm3[0]
             best[1] = copy.deepcopy(local_best_swarm3[1])
+            best_first_update = False
+
         # swarm 1
         for i in range(0, 10):
             velocities[i] = w * velocities[i] + c1 * random.random() * (
