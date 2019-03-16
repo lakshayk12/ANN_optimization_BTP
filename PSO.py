@@ -93,8 +93,8 @@ def generate_output_and_error(X, Y, W, tf1, tf2):
     output = softmax(inputForOutputLayer)
 
     # calculate error
-    curr_error = np.sum(-Y * np.log(output))
-    return output, curr_error
+    cross_ent_error = np.sum(-Y * np.log(output))
+    return output, cross_ent_error
 
 
 def give_N_weight_chromosomes(n, no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2,
@@ -114,10 +114,16 @@ def give_N_weight_chromosomes(n, no_of_input_neurons, no_of_hidden_neurons1, no_
     return np.array(weights)
 
 
+def cal_penalty(no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2):
+    penalty1 = (no_of_input_neurons + no_of_hidden_neurons1 + no_of_hidden_neurons2) / settings.max_no_of_neurons
+    return penalty1
+
+
 def model(x_train, y_train, no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2, no_of_output_neurons,
           tf1, tf2, guessed_weights=None):
     # initialize random population
-    weights = give_N_weight_chromosomes(settings.pso_population_size, no_of_input_neurons, no_of_hidden_neurons1,
+    population_size = settings.pso_population_size
+    weights = give_N_weight_chromosomes(population_size, no_of_input_neurons, no_of_hidden_neurons1,
                                         no_of_hidden_neurons2,
                                         no_of_output_neurons, guessed_weights)
     c1 = 1.48  # const
@@ -136,26 +142,30 @@ def model(x_train, y_train, no_of_input_neurons, no_of_hidden_neurons1, no_of_hi
     local_best_swarm2 = [math.inf, -1]  # error, weight
     local_best_swarm3 = [math.inf, -1]  # error, weight
 
+    total_penalty = cal_penalty(no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2)
+
+    swarm_size = int(population_size / 3)
+
     for it in range(Max_iteration):
         # swarm 1
-        for i in range(0, 10):
-            output, curr_error = generate_output_and_error(x_train, y_train, weights[i], tf1, tf2)
-            if first_run or curr_error < local_best_swarm1[0]:
-                local_best_swarm1[0] = curr_error
+        for i in range(0, swarm_size):
+            output, cross_ent_error = generate_output_and_error(x_train, y_train, weights[i], tf1, tf2)
+            if first_run or cross_ent_error < local_best_swarm1[0]:
+                local_best_swarm1[0] = cross_ent_error
                 local_best_swarm1[1] = copy.deepcopy(weights[i])
                 first_run = False
 
-        for i in range(10, 20):
-            output, curr_error = generate_output_and_error(x_train, y_train, weights[i], tf1, tf2)
-            if first_run or curr_error < local_best_swarm2[0]:
-                local_best_swarm2[0] = curr_error
+        for i in range(swarm_size, int(swarm_size * 2)):
+            output, cross_ent_error = generate_output_and_error(x_train, y_train, weights[i], tf1, tf2)
+            if first_run or cross_ent_error < local_best_swarm2[0]:
+                local_best_swarm2[0] = cross_ent_error
                 local_best_swarm2[1] = copy.deepcopy(weights[i])
                 first_run = False
 
-        for i in range(20, 30):
-            output, curr_error = generate_output_and_error(x_train, y_train, weights[i], tf1, tf2)
-            if first_run or curr_error < local_best_swarm3[0]:
-                local_best_swarm3[0] = curr_error
+        for i in range(int(swarm_size * 2), int(swarm_size * 3)):
+            output, cross_ent_error = generate_output_and_error(x_train, y_train, weights[i], tf1, tf2)
+            if first_run or cross_ent_error < local_best_swarm3[0]:
+                local_best_swarm3[0] = cross_ent_error
                 local_best_swarm3[1] = copy.deepcopy(weights[i])
                 first_run = False
 
@@ -176,14 +186,14 @@ def model(x_train, y_train, no_of_input_neurons, no_of_hidden_neurons1, no_of_hi
             best_first_update = False
 
         # swarm 1
-        for i in range(0, 10):
+        for i in range(0, swarm_size):
             velocities[i] = w * velocities[i] + c1 * random.random() * (
                     local_best_swarm1[1] - weights[i]) + c2 * random.random() * (best[1] - weights[i])
             weights[i] = (dt * velocities[i]) + weights[i]
             w = wMin - i * (wMax - wMin) / Max_iteration
 
         # swarm 2
-        for i in range(10, 20):
+        for i in range(swarm_size, int(swarm_size * 2)):
             velocities[i] = w * velocities[i] + c1 * random.random() * (
                     local_best_swarm2[1] - weights[i]) + c2 * random.random() * (best[1] - weights[i])
             weights[i] = (dt * velocities[i]) + weights[i]
@@ -191,12 +201,14 @@ def model(x_train, y_train, no_of_input_neurons, no_of_hidden_neurons1, no_of_hi
             w = wMin - i * (wMax - wMin) / Max_iteration
 
         # swarm 3
-        for i in range(20, 30):
+        for i in range(int(swarm_size * 2), int(swarm_size * 3)):
             velocities[i] = w * velocities[i] + c1 * random.random() * (
                     local_best_swarm3[1] - weights[i]) + c2 * random.random() * (best[1] - weights[i])
             weights[i] = (dt * velocities[i]) + weights[i]
             w = wMin - i * (wMax - wMin) / Max_iteration
 
+    total_error = best[0] + total_penalty
     output, curr_error = generate_output_and_error(x_train, y_train, best[1], tf1, tf2)  # best[1] is optimal weights
     accuracy = accuracy_score(y_train.argmax(axis=1), output.argmax(axis=1))
-    return accuracy, best[1]  # accuracy and best_weights
+    print("Currently The Accuracy:", accuracy)
+    return total_error, best[1]  # total_error and best_weights

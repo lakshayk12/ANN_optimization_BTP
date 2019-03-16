@@ -11,6 +11,10 @@ minimum_no_of_hidden_neuron = 2
 def give_a_random_solution(no_of_features):
     global max_number_of_hidden_neuron
     max_number_of_hidden_neuron = 2 * (no_of_features + 1)
+
+    if settings.max_no_of_neurons is None:
+        settings.max_no_of_neurons = no_of_features + max_number_of_hidden_neuron * 2
+
     vector = [[0 for i in range(no_of_features)]]
     n = math.ceil(math.log(max_number_of_hidden_neuron, 2))
     if settings.minimum_no_of_present_features is None:
@@ -319,7 +323,8 @@ def algorithm(x_train, y_train):
     # exit()
     previous_weights_of_ghs = []  # saves previous weights of ith grasshopper
     previous_ghs = []  # saves previous ith grasshopper
-    best_sol = [0, -1, -1]  # accuracy, grasshopper, corresponding_weights
+    best_sol = [math.inf, -1, -1]  # error, grasshopper, corresponding_weights
+    first_run = True
     for i in range(len(grasshoppers)):
         no_of_hidden_neurons1 = int(grasshoppers[i][1], 2)
         no_of_hidden_neurons2 = int(grasshoppers[i][2], 2)
@@ -328,18 +333,19 @@ def algorithm(x_train, y_train):
         print("Running PSO on", i, "solution:")
         print(grasshoppers[i])
         updated_x_train = updated_X(x_train, grasshoppers[i][0])
-        accuracy, corresponding_weights = PSO.model(updated_x_train, y_train,
-                                                    no_of_input_neurons=len(updated_x_train[0]),
-                                                    no_of_hidden_neurons1=no_of_hidden_neurons1,
-                                                    no_of_hidden_neurons2=no_of_hidden_neurons2,
-                                                    no_of_output_neurons=settings.no_of_classes, tf1=tf1, tf2=tf2)
+        error, corresponding_weights = PSO.model(updated_x_train, y_train,
+                                                 no_of_input_neurons=len(updated_x_train[0]),
+                                                 no_of_hidden_neurons1=no_of_hidden_neurons1,
+                                                 no_of_hidden_neurons2=no_of_hidden_neurons2,
+                                                 no_of_output_neurons=settings.no_of_classes, tf1=tf1, tf2=tf2)
         previous_ghs.append(copy.deepcopy(grasshoppers[i]))
         previous_weights_of_ghs.append(copy.deepcopy(corresponding_weights))
-        print(accuracy, "\n")
-        if accuracy > best_sol[0]:
-            best_sol[0] = accuracy
+        print(error, "\n")
+        if first_run or error < best_sol[0]:
+            best_sol[0] = error
             best_sol[1] = copy.deepcopy(grasshoppers[i])
             best_sol[2] = copy.deepcopy(corresponding_weights)
+            first_run = False
 
     print("Initial Best", best_sol[0:1], "\n\n")
     # exit()
@@ -390,23 +396,23 @@ def algorithm(x_train, y_train):
                                            copy.deepcopy(previous_weights_of_ghs[i]))
             # print("guesssss\n", guessed_weights)
             # exit()
-            accuracy, corresponding_weights = PSO.model(updated_x_train, y_train,
-                                                        no_of_input_neurons=len(updated_x_train[0]),
-                                                        no_of_hidden_neurons1=no_of_hidden_neurons1,
-                                                        no_of_hidden_neurons2=no_of_hidden_neurons2,
-                                                        no_of_output_neurons=settings.no_of_classes, tf1=tf1, tf2=tf2,
-                                                        guessed_weights=guessed_weights)
+            error, corresponding_weights = PSO.model(updated_x_train, y_train,
+                                                     no_of_input_neurons=len(updated_x_train[0]),
+                                                     no_of_hidden_neurons1=no_of_hidden_neurons1,
+                                                     no_of_hidden_neurons2=no_of_hidden_neurons2,
+                                                     no_of_output_neurons=settings.no_of_classes, tf1=tf1, tf2=tf2,
+                                                     guessed_weights=guessed_weights)
             previous_ghs[i] = copy.deepcopy(grasshoppers[i])
             previous_weights_of_ghs[i] = copy.deepcopy(corresponding_weights)
 
-            if accuracy > best_sol[0]:
-                best_sol[0] = accuracy
+            if error < best_sol[0]:
+                best_sol[0] = error
                 best_sol[1] = copy.deepcopy(grasshoppers[i])
                 best_sol[2] = copy.deepcopy(corresponding_weights)
                 print("\n\nBEST UPDATED: ", best_sol[0:1], "\n\n")
 
             print("----------------------------------------------------------------------------->")
-            print("Best accuracy so far", best_sol[0:1])
+            print("Best error so far", best_sol[0:1])
         l += 1
 
     return best_sol
