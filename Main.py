@@ -49,6 +49,7 @@ def verify(x_test, y_test, optimal_solution):
                                                   optimal_solution[1][4])
     print("Error:", error)
     print("Prediction:", output.argmax(axis=1))
+    print("Accuracy:", accuracy_score(y_test.argmax(axis=1), output.argmax(axis=1)))
 
 
 if __name__ == '__main__':

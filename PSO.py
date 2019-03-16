@@ -116,7 +116,8 @@ def give_N_weight_chromosomes(n, no_of_input_neurons, no_of_hidden_neurons1, no_
 
 def cal_penalty(no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2):
     penalty1 = (no_of_input_neurons + no_of_hidden_neurons1 + no_of_hidden_neurons2) / settings.max_no_of_neurons
-    return penalty1
+    penalty2 = 0
+    return penalty1 + penalty2
 
 
 def model(x_train, y_train, no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2, no_of_output_neurons,

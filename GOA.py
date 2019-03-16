@@ -409,7 +409,7 @@ def algorithm(x_train, y_train):
                 best_sol[0] = error
                 best_sol[1] = copy.deepcopy(grasshoppers[i])
                 best_sol[2] = copy.deepcopy(corresponding_weights)
-                print("\n\nBEST UPDATED: ", best_sol[0:1], "\n\n")
+                print("BEST UPDATED: ", best_sol[0:1], "\n\n")
 
             print("----------------------------------------------------------------------------->")
             print("Best error so far", best_sol[0:1])
