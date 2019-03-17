@@ -117,7 +117,8 @@ def give_N_weight_chromosomes(n, no_of_input_neurons, no_of_hidden_neurons1, no_
 def cal_penalty(no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2):
     penalty1 = (no_of_input_neurons + no_of_hidden_neurons1 + no_of_hidden_neurons2) / settings.max_no_of_neurons
     penalty2 = 0
-    return penalty1 + penalty2
+    # return penalty1 + penalty2
+    return 0
 
 
 def model(x_train, y_train, no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2, no_of_output_neurons,
@@ -198,7 +199,6 @@ def model(x_train, y_train, no_of_input_neurons, no_of_hidden_neurons1, no_of_hi
             velocities[i] = w * velocities[i] + c1 * random.random() * (
                     local_best_swarm2[1] - weights[i]) + c2 * random.random() * (best[1] - weights[i])
             weights[i] = (dt * velocities[i]) + weights[i]
-            weights[i] = (dt * velocities[i]) + weights[i]
             w = wMin - i * (wMax - wMin) / Max_iteration
 
         # swarm 3
@@ -208,8 +208,9 @@ def model(x_train, y_train, no_of_input_neurons, no_of_hidden_neurons1, no_of_hi
             weights[i] = (dt * velocities[i]) + weights[i]
             w = wMin - i * (wMax - wMin) / Max_iteration
 
-    total_error = best[0] + total_penalty
     output, curr_error = generate_output_and_error(x_train, y_train, best[1], tf1, tf2)  # best[1] is optimal weights
     accuracy = accuracy_score(y_train.argmax(axis=1), output.argmax(axis=1))
-    print("Currently The Accuracy:", accuracy)
+    print("Accuracy:", accuracy)
+    total_error = (0.2 * best[0]) + (0.8 * (1 - accuracy))
+    print("Error:", total_error)
     return total_error, best[1]  # total_error and best_weights

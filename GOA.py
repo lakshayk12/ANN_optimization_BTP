@@ -330,7 +330,7 @@ def algorithm(x_train, y_train):
         no_of_hidden_neurons2 = int(grasshoppers[i][2], 2)
         tf1 = grasshoppers[i][3]
         tf2 = grasshoppers[i][4]
-        print("Running PSO on", i, "solution:")
+        print("\nRunning PSO on ", i + 1, " solution:")
         print(grasshoppers[i])
         updated_x_train = updated_X(x_train, grasshoppers[i][0])
         error, corresponding_weights = PSO.model(updated_x_train, y_train,
@@ -340,24 +340,25 @@ def algorithm(x_train, y_train):
                                                  no_of_output_neurons=settings.no_of_classes, tf1=tf1, tf2=tf2)
         previous_ghs.append(copy.deepcopy(grasshoppers[i]))
         previous_weights_of_ghs.append(copy.deepcopy(corresponding_weights))
-        print(error, "\n")
+        # print("ERROR: ",error)
         if first_run or error < best_sol[0]:
             best_sol[0] = error
             best_sol[1] = copy.deepcopy(grasshoppers[i])
             best_sol[2] = copy.deepcopy(corresponding_weights)
             first_run = False
 
-    print("Initial Best", best_sol[0:1], "\n\n")
+    print("\nInitial Best", best_sol[0:1], "\n\n")
     # exit()
     max_it = settings.goa_max_iteration
     cMax = 1
     cMin = 0.00004
-    l = 2
+    l = 1
     ub = len(grasshoppers[0][0]) + len(grasshoppers[0][1])  ##................?????
     lb = 0
     while l < max_it:
         c = cMax - l * ((cMax - cMin) / max_it)
-        print(l, "iteration, c", c, "----------------------------------------------------------------------------->")
+        print("\n\nITERATION -> ", l, " with value of C -> ", c,
+              "----------------------------------------------------------------------------->")
         for i in range(len(grasshoppers)):
             j = 0
             Xi = 0
@@ -383,7 +384,7 @@ def algorithm(x_train, y_train):
             change_value = np.ceil(Xi)
             grasshoppers[i] = update_position(grasshoppers[i], abs(change_value))
 
-            print("current GOA grasshopper----------------------------------------->>>", grasshoppers[i])
+            print("\nCurrent GOA grasshopper------------------>>>", grasshoppers[i])
 
             no_of_hidden_neurons1 = int(grasshoppers[i][1], 2)
             no_of_hidden_neurons2 = int(grasshoppers[i][2], 2)
@@ -409,10 +410,11 @@ def algorithm(x_train, y_train):
                 best_sol[0] = error
                 best_sol[1] = copy.deepcopy(grasshoppers[i])
                 best_sol[2] = copy.deepcopy(corresponding_weights)
-                print("BEST UPDATED: ", best_sol[0:1], "\n\n")
+                print("\nBEST UPDATED: ", best_sol[0:1], "\n\n")
 
-            print("----------------------------------------------------------------------------->")
-            print("Best error so far", best_sol[0:1])
+            print("\n-------------------------------------------------------------------------------")
+            print("Best ERROR so far", best_sol[0:1])
+            print("-------------------------------------------------------------------------------\n")
         l += 1
 
     return best_sol

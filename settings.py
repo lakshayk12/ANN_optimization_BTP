@@ -1,4 +1,4 @@
-pso_max_iteration = 300
+pso_max_iteration = 1000
 goa_max_iteration = 100
 goa_population_size = 30
 pso_population_size = 30  # should be in multiple of 3.

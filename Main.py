@@ -42,12 +42,17 @@ def scale(x_train, x_test):
 
 
 def verify(x_test, y_test, optimal_solution):
-    print("\n\nOPTIMAL SOLUTION:\n", optimal_solution)
+    # print("\n\nOPTIMAL SOLUTION:\n", optimal_solution)
+    print("\nOPTIMAL ERROR: \n", optimal_solution[0])
+    print("\nOPTIMAL ARCHITECTURE:\n", optimal_solution[1])
+    print("\nOPTIMAL WEIGHT MATRIX:\n", optimal_solution[2])
+
     feature_set = optimal_solution[1][0]
     updated_x_test = GOA.updated_X(x_test, feature_set)
     output, error = PSO.generate_output_and_error(updated_x_test, y_test, optimal_solution[2], optimal_solution[1][3],
                                                   optimal_solution[1][4])
-    print("Error:", error)
+    print("\n*** RESULTS ON TESTING DATA ***")
+    print("\nError:", error)
     print("Prediction:", output.argmax(axis=1))
     print("Accuracy:", accuracy_score(y_test.argmax(axis=1), output.argmax(axis=1)))
 
@@ -75,5 +80,5 @@ if __name__ == '__main__':
     x_train, x_test = scale(x_train, x_test)
     optimal_solution = GOA.algorithm(x_train, y_train)  # accuracy, grasshopper, corresponding_weights
     verify(x_test, y_test, optimal_solution)
-    print("Execution Time:", time.time() - start_time)
+    print("\nExecution Time:", time.time() - start_time)
     exit(0)
