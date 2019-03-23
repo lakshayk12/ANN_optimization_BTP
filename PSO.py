@@ -93,7 +93,7 @@ def generate_output_and_error(X, Y, W, tf1, tf2):
     output = softmax(inputForOutputLayer)
 
     # calculate error
-    cross_ent_error = np.sum(-Y * np.log(output))
+    cross_ent_error = np.sum(-Y * np.log(output)) / (len(X) * settings.no_of_classes)
     return output, cross_ent_error
 
 
@@ -208,9 +208,4 @@ def model(x_train, y_train, no_of_input_neurons, no_of_hidden_neurons1, no_of_hi
             weights[i] = (dt * velocities[i]) + weights[i]
             w = wMin - i * (wMax - wMin) / Max_iteration
 
-    output, curr_error = generate_output_and_error(x_train, y_train, best[1], tf1, tf2)  # best[1] is optimal weights
-    accuracy = accuracy_score(y_train.argmax(axis=1), output.argmax(axis=1))
-    print("Accuracy:", accuracy)
-    total_error = (0.2 * best[0]) + (0.8 * (1 - accuracy))
-    print("Error:", total_error)
-    return total_error, best[1]  # total_error and best_weights
+    return best[0], best[1]  # CEE and best_weights

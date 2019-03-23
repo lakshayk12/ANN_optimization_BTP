@@ -4,6 +4,8 @@ import random
 import numpy as np
 import PSO
 import settings
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
 minimum_no_of_hidden_neuron = 2
 
@@ -13,7 +15,7 @@ def give_a_random_solution(no_of_features):
     max_number_of_hidden_neuron = 2 * (no_of_features + 1)
 
     if settings.max_no_of_neurons is None:
-        settings.max_no_of_neurons = no_of_features + max_number_of_hidden_neuron * 2
+        settings.max_no_of_neurons = max_number_of_hidden_neuron * 2
 
     vector = [[0 for i in range(no_of_features)]]
     n = math.ceil(math.log(max_number_of_hidden_neuron, 2))
@@ -314,7 +316,26 @@ def guess_weight(gh, previous_gh, old_weights):  # here, gh is new grasshopper
     return np.array([new_wh1, new_bh1, new_wh2, new_bh2, new_wo, new_bo])
 
 
+def validation_split_of_dataset(x_train, y_train):
+    x_train, x_validate, y_train, y_validate = train_test_split(x_train, y_train, test_size=0.2, random_state=0)
+    return x_train, x_validate, y_train, y_validate
+
+
+def validation_error(x_validate, y_validate, weights, tf1, tf2):
+    output, curr_error = PSO.generate_output_and_error(x_validate, y_validate, weights, tf1, tf2)
+    accuracy = accuracy_score(y_validate.argmax(axis=1), output.argmax(axis=1))
+    mis_classification_error = 1 - accuracy
+    return mis_classification_error
+
+
+def feature_vector_penalty(feature_vector):
+    return np.count_nonzero(np.array(feature_vector)) / len(feature_vector)
+
+
 def algorithm(x_train, y_train):
+    # validation split
+    x_train, x_validate, y_train, y_validate = validation_split_of_dataset(x_train, y_train)
+
     N = settings.goa_population_size
     grasshoppers = give_N_random_solutions(N, len(x_train[0]))
     # A' = [[list([0, 1]) '101' '110' array([0, 0]) array([0, 0])]
@@ -325,6 +346,8 @@ def algorithm(x_train, y_train):
     previous_ghs = []  # saves previous ith grasshopper
     best_sol = [math.inf, -1, -1]  # error, grasshopper, corresponding_weights
     first_run = True
+
+    # Initial loop for finding initial bests solutions
     for i in range(len(grasshoppers)):
         no_of_hidden_neurons1 = int(grasshoppers[i][1], 2)
         no_of_hidden_neurons2 = int(grasshoppers[i][2], 2)
@@ -333,11 +356,19 @@ def algorithm(x_train, y_train):
         print("\nRunning PSO on ", i + 1, " solution:")
         print(grasshoppers[i])
         updated_x_train = updated_X(x_train, grasshoppers[i][0])
-        error, corresponding_weights = PSO.model(updated_x_train, y_train,
-                                                 no_of_input_neurons=len(updated_x_train[0]),
-                                                 no_of_hidden_neurons1=no_of_hidden_neurons1,
-                                                 no_of_hidden_neurons2=no_of_hidden_neurons2,
-                                                 no_of_output_neurons=settings.no_of_classes, tf1=tf1, tf2=tf2)
+        updated_x_validate = updated_X(x_validate, grasshoppers[i][0])
+        CEE, corresponding_weights = PSO.model(updated_x_train, y_train,
+                                               no_of_input_neurons=len(updated_x_train[0]),
+                                               no_of_hidden_neurons1=no_of_hidden_neurons1,
+                                               no_of_hidden_neurons2=no_of_hidden_neurons2,
+                                               no_of_output_neurons=settings.no_of_classes,
+                                               tf1=tf1, tf2=tf2)
+        # Fitness of a Grasshopper
+        architecture_penalty = (no_of_hidden_neurons1 + no_of_hidden_neurons2) / settings.max_no_of_neurons
+        error = 0.3 * CEE + 0.4 * validation_error(updated_x_validate, y_validate, corresponding_weights, tf1,
+                                                   tf2) + 0.2 * architecture_penalty + 0.1 * feature_vector_penalty(
+            grasshoppers[i][0])
+
         previous_ghs.append(copy.deepcopy(grasshoppers[i]))
         previous_weights_of_ghs.append(copy.deepcopy(corresponding_weights))
         # print("ERROR: ",error)
@@ -391,18 +422,26 @@ def algorithm(x_train, y_train):
             tf1 = grasshoppers[i][3]
             tf2 = grasshoppers[i][4]
             updated_x_train = updated_X(x_train, grasshoppers[i][0])
+            updated_x_validate = updated_X(x_validate, grasshoppers[i][0])
             # guess initial weights from previous weights
             # print("PReviouysfnefe\n", previous_weights_of_ghs[i])
             guessed_weights = guess_weight(grasshoppers[i], copy.deepcopy(previous_ghs[i]),
                                            copy.deepcopy(previous_weights_of_ghs[i]))
             # print("guesssss\n", guessed_weights)
             # exit()
-            error, corresponding_weights = PSO.model(updated_x_train, y_train,
-                                                     no_of_input_neurons=len(updated_x_train[0]),
-                                                     no_of_hidden_neurons1=no_of_hidden_neurons1,
-                                                     no_of_hidden_neurons2=no_of_hidden_neurons2,
-                                                     no_of_output_neurons=settings.no_of_classes, tf1=tf1, tf2=tf2,
-                                                     guessed_weights=guessed_weights)
+            CEE, corresponding_weights = PSO.model(updated_x_train, y_train,
+                                                   no_of_input_neurons=len(updated_x_train[0]),
+                                                   no_of_hidden_neurons1=no_of_hidden_neurons1,
+                                                   no_of_hidden_neurons2=no_of_hidden_neurons2,
+                                                   no_of_output_neurons=settings.no_of_classes, tf1=tf1, tf2=tf2,
+                                                   guessed_weights=guessed_weights)
+
+            # Fitness of a Grasshopper
+            architecture_penalty = (no_of_hidden_neurons1 + no_of_hidden_neurons2) / settings.max_no_of_neurons
+            error = 0.3 * CEE + 0.4 * validation_error(updated_x_validate, y_validate, corresponding_weights, tf1,
+                                                       tf2) + 0.2 * architecture_penalty + 0.1 * feature_vector_penalty(
+                grasshoppers[i][0])
+
             previous_ghs[i] = copy.deepcopy(grasshoppers[i])
             previous_weights_of_ghs[i] = copy.deepcopy(corresponding_weights)
 

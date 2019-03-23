@@ -76,8 +76,8 @@ if __name__ == '__main__':
     x_test = x_train
     y_test = y_train
 
-    x_train, x_test, y_train, y_test = get_dataset_ready('Parkinsons.csv')
-    x_train, x_test = scale(x_train, x_test)
+    # x_train, x_test, y_train, y_test = get_dataset_ready('Parkinsons.csv')
+    # x_train, x_test = scale(x_train, x_test)
     optimal_solution = GOA.algorithm(x_train, y_train)  # accuracy, grasshopper, corresponding_weights
     verify(x_test, y_test, optimal_solution)
     print("\nExecution Time:", time.time() - start_time)
