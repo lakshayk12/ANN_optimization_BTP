@@ -365,13 +365,15 @@ def algorithm(x_train, y_train):
                                                tf1=tf1, tf2=tf2)
         # Fitness of a Grasshopper
         architecture_penalty = (no_of_hidden_neurons1 + no_of_hidden_neurons2) / settings.max_no_of_neurons
-        error = 0.3 * CEE + 0.4 * validation_error(updated_x_validate, y_validate, corresponding_weights, tf1,
-                                                   tf2) + 0.2 * architecture_penalty + 0.1 * feature_vector_penalty(
-            grasshoppers[i][0])
+        error = settings.CEE_weight * CEE
+        error += settings.v_error_weight * validation_error(updated_x_validate, y_validate, corresponding_weights, tf1,
+                                                            tf2)
+        error += settings.arch_penalty_weight * architecture_penalty
+        error += settings.feature_penalty_weight * feature_vector_penalty(grasshoppers[i][0])
+        print("| GOA fitness:", error)
 
         previous_ghs.append(copy.deepcopy(grasshoppers[i]))
         previous_weights_of_ghs.append(copy.deepcopy(corresponding_weights))
-        # print("ERROR: ",error)
         if first_run or error < best_sol[0]:
             best_sol[0] = error
             best_sol[1] = copy.deepcopy(grasshoppers[i])
@@ -379,12 +381,12 @@ def algorithm(x_train, y_train):
             first_run = False
 
     print("\nInitial Best", best_sol[0:1], "\n\n")
-    # exit()
     max_it = settings.goa_max_iteration
     cMax = 1
     cMin = 0.00004
     l = 1
-    ub = len(grasshoppers[0][0]) + len(grasshoppers[0][1])  ##................?????
+    ub = len(grasshoppers[0][0]) + len(grasshoppers[0][1]) + len(grasshoppers[0][2]) + len(grasshoppers[0][3]) + len(
+        grasshoppers[0][4])
     lb = 0
     while l < max_it:
         c = cMax - l * ((cMax - cMin) / max_it)
@@ -400,18 +402,13 @@ def algorithm(x_train, y_train):
                     # Normalize
                     grasshoppers[i] = normalize_distance(grasshoppers[i], grasshoppers[j])
                     # grasshoppers[j] = normalize_distance(grasshoppers[j], grasshoppers[i])
-
                     dist = distance(grasshoppers[j], grasshoppers[i])
                     Xi += c * ((ub - lb) / 2) * (0.5 * np.exp(-dist / 1.5) - np.exp(-dist))
                 j += 1
 
-            # print(Xi)
             Xi *= c
-            # print(Xi)
             Td = distance(grasshoppers[i], best_sol[1])
-            # print("Dist", Td)
             Xi += Td
-            # print("Final Xi", Xi)
             change_value = np.ceil(Xi)
             grasshoppers[i] = update_position(grasshoppers[i], abs(change_value))
 
@@ -438,9 +435,13 @@ def algorithm(x_train, y_train):
 
             # Fitness of a Grasshopper
             architecture_penalty = (no_of_hidden_neurons1 + no_of_hidden_neurons2) / settings.max_no_of_neurons
-            error = 0.3 * CEE + 0.4 * validation_error(updated_x_validate, y_validate, corresponding_weights, tf1,
-                                                       tf2) + 0.2 * architecture_penalty + 0.1 * feature_vector_penalty(
-                grasshoppers[i][0])
+            error = settings.CEE_weight * CEE
+            error += settings.v_error_weight * validation_error(updated_x_validate, y_validate, corresponding_weights,
+                                                                tf1,
+                                                                tf2)
+            error += settings.arch_penalty_weight * architecture_penalty
+            error += settings.feature_penalty_weight * feature_vector_penalty(grasshoppers[i][0])
+            print("| GOA fitness:", error)
 
             previous_ghs[i] = copy.deepcopy(grasshoppers[i])
             previous_weights_of_ghs[i] = copy.deepcopy(corresponding_weights)
@@ -452,7 +453,7 @@ def algorithm(x_train, y_train):
                 print("\nBEST UPDATED: ", best_sol[0:1], "\n\n")
 
             print("\n-------------------------------------------------------------------------------")
-            print("Best ERROR so far", best_sol[0:1])
+            print("Best GOA Fitness so far", best_sol[0:1])
             print("-------------------------------------------------------------------------------\n")
         l += 1
 

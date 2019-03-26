@@ -208,4 +208,7 @@ def model(x_train, y_train, no_of_input_neurons, no_of_hidden_neurons1, no_of_hi
             weights[i] = (dt * velocities[i]) + weights[i]
             w = wMin - i * (wMax - wMin) / Max_iteration
 
+    output, curr_error = generate_output_and_error(x_train, y_train, best[1], tf1, tf2)  # best[1] is optimal weights
+    accuracy = accuracy_score(y_train.argmax(axis=1), output.argmax(axis=1))
+    print("PSO Fitness (CEE):", best[0], "| PSO Accuracy:", accuracy, end=" ")
     return best[0], best[1]  # CEE and best_weights
