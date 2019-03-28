@@ -329,7 +329,12 @@ def validation_error(x_validate, y_validate, weights, tf1, tf2):
 
 
 def feature_vector_penalty(feature_vector):
-    return np.count_nonzero(np.array(feature_vector)) / len(feature_vector)
+    sel = np.count_nonzero(np.array(feature_vector))
+    total = len(feature_vector)
+    y = np.square(sel - total / 2)
+    y_max = np.square(0 - total / 2)
+    y_normalized = (y - 0) / (y_max - 0)
+    return y_normalized
 
 
 def algorithm(x_train, y_train):
