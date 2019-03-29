@@ -30,7 +30,7 @@ def get_dataset_ready(filename):
     for i in range(one_hot_labels.shape[0]):
         one_hot_labels[i, int(Y[i, 0])] = 1
     Y = one_hot_labels
-    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=0)
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.2)
     return x_train, x_test, y_train, y_test
 
 
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     # x_test = x_train
     # y_test = y_train
 
-    x_train, x_test, y_train, y_test = get_dataset_ready("datasets/Parkinsons.csv")
+    x_train, x_test, y_train, y_test = get_dataset_ready("datasets/breast_cancer.csv")
     x_train, x_test = scale(x_train, x_test)
     optimal_solution = GOA.algorithm(x_train, y_train)  # accuracy, grasshopper, corresponding_weights
     verify(x_test, y_test, optimal_solution)

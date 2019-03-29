@@ -317,7 +317,7 @@ def guess_weight(gh, previous_gh, old_weights):  # here, gh is new grasshopper
 
 
 def validation_split_of_dataset(x_train, y_train):
-    x_train, x_validate, y_train, y_validate = train_test_split(x_train, y_train, test_size=0.2, random_state=0)
+    x_train, x_validate, y_train, y_validate = train_test_split(x_train, y_train, test_size=0.2)
     return x_train, x_validate, y_train, y_validate
 
 
