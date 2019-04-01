@@ -18,15 +18,15 @@ def handle(s):
 # print(data[0])
 # np.savetxt("breast_cancer.csv", data, delimiter=',')
 
-# a = np.genfromtxt('Hill_Vaglley_with_noise_Training.csv', delimiter=',', skip_header=True)
-# print(a.shape)
+a = np.genfromtxt('datasets/BankNote_Authentication.csv', delimiter=',', skip_header=True)
+print(a.shape)
 # b = np.genfromtxt('Hill_gValley_with_noise_Testing.csv', delimiter=',', skip_header=True)
 # print(b.shape)
 # c = np.concatenate((a, b), axis=0)
 # print(c.shape)
-# np.savetxt("hill_gffvalley.csv", c, delimiter=',')
+np.savetxt("datasets/BankNote_Authentication_cln.csv", a, delimiter=',')
 
-# exit()
+exit()
 df = pd.read_csv('kr-vs-kp.csv', header=None)
 df.columns = ['buying', 'maint', 'doors', 'persons', 'lug_boot', 'safety', 'Y']
 unq = np.unique(np.array(df['buying']))
