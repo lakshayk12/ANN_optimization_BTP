@@ -92,8 +92,9 @@ if __name__ == '__main__':
     # y_train = np.array(y_train)
     # x_test = x_train
     # y_test = y_train
-
-    x_train, x_test, y_train, y_test = get_dataset_ready("datasets/glass.csv")
+    dataset_path = "datasets/glass.csv"
+    print(dataset_path.split('/')[1])
+    x_train, x_test, y_train, y_test = get_dataset_ready(dataset_path)
     x_train, x_test = scale(x_train, x_test)
     optimal_solution = GOA.algorithm(x_train, y_train)  # accuracy, grasshopper, corresponding_weights
     verify(x_test, y_test, optimal_solution)
