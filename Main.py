@@ -7,6 +7,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import StandardScaler
 import GOA
 import PSO
+import sys
 import settings
 
 
@@ -57,7 +58,23 @@ def verify(x_test, y_test, optimal_solution):
     print("Accuracy:", accuracy_score(y_test.argmax(axis=1), output.argmax(axis=1)))
 
 
+def save_log():
+    te = open('log.txt', 'w')  # File where you need to keep the logs
+
+    class Unbuffered:
+        def __init__(self, stream):
+            self.stream = stream
+
+        def write(self, data):
+            self.stream.write(data)
+            self.stream.flush()
+            te.write(data)  # Write the data of stdout here to a text file as well
+
+    sys.stdout = Unbuffered(sys.stdout)
+
+
 if __name__ == '__main__':
+    save_log()
     # old_dim = (4, 10)
     # new_dim = (5, 2)
     # old_matrix = np.random.randn(old_dim[0], old_dim[1])
@@ -76,7 +93,7 @@ if __name__ == '__main__':
     # x_test = x_train
     # y_test = y_train
 
-    x_train, x_test, y_train, y_test = get_dataset_ready("datasets/breast_cancer.csv")
+    x_train, x_test, y_train, y_test = get_dataset_ready("datasets/glass.csv")
     x_train, x_test = scale(x_train, x_test)
     optimal_solution = GOA.algorithm(x_train, y_train)  # accuracy, grasshopper, corresponding_weights
     verify(x_test, y_test, optimal_solution)
