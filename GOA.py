@@ -338,8 +338,12 @@ def feature_vector_penalty(feature_vector):
 
 
 def algorithm(x_train, y_train):
-    # validation split
-    x_train, x_validate, y_train, y_validate = validation_split_of_dataset(x_train, y_train)
+    if settings.validation_flag:
+        # validation split
+        x_train, x_validate, y_train, y_validate = validation_split_of_dataset(x_train, y_train)
+        print(len(x_validate), "instances for validation.")
+
+    print(len(x_train), "instances for training.")
 
     N = settings.goa_population_size
     grasshoppers = give_N_random_solutions(N, len(x_train[0]))
@@ -361,7 +365,8 @@ def algorithm(x_train, y_train):
         print("\nRunning PSO on ", i + 1, " solution:")
         print(grasshoppers[i])
         updated_x_train = updated_X(x_train, grasshoppers[i][0])
-        updated_x_validate = updated_X(x_validate, grasshoppers[i][0])
+        if settings.validation_flag:
+            updated_x_validate = updated_X(x_validate, grasshoppers[i][0])
         CEE, corresponding_weights = PSO.model(updated_x_train, y_train,
                                                no_of_input_neurons=len(updated_x_train[0]),
                                                no_of_hidden_neurons1=no_of_hidden_neurons1,
@@ -371,8 +376,10 @@ def algorithm(x_train, y_train):
         # Fitness of a Grasshopper
         architecture_penalty = (no_of_hidden_neurons1 + no_of_hidden_neurons2) / settings.max_no_of_neurons
         error = settings.CEE_weight * CEE
-        error += settings.v_error_weight * validation_error(updated_x_validate, y_validate, corresponding_weights, tf1,
-                                                            tf2)
+        if settings.validation_flag:
+            error += settings.v_error_weight * validation_error(updated_x_validate, y_validate, corresponding_weights,
+                                                                tf1,
+                                                                tf2)
         error += settings.arch_penalty_weight * architecture_penalty
         error += settings.feature_penalty_weight * feature_vector_penalty(grasshoppers[i][0])
         print("| GOA fitness:", error)
@@ -424,7 +431,8 @@ def algorithm(x_train, y_train):
             tf1 = grasshoppers[i][3]
             tf2 = grasshoppers[i][4]
             updated_x_train = updated_X(x_train, grasshoppers[i][0])
-            updated_x_validate = updated_X(x_validate, grasshoppers[i][0])
+            if settings.validation_flag:
+                updated_x_validate = updated_X(x_validate, grasshoppers[i][0])
             # guess initial weights from previous weights
             # print("PReviouysfnefe\n", previous_weights_of_ghs[i])
             guessed_weights = guess_weight(grasshoppers[i], copy.deepcopy(previous_ghs[i]),
@@ -441,9 +449,11 @@ def algorithm(x_train, y_train):
             # Fitness of a Grasshopper
             architecture_penalty = (no_of_hidden_neurons1 + no_of_hidden_neurons2) / settings.max_no_of_neurons
             error = settings.CEE_weight * CEE
-            error += settings.v_error_weight * validation_error(updated_x_validate, y_validate, corresponding_weights,
-                                                                tf1,
-                                                                tf2)
+            if settings.validation_flag:
+                error += settings.v_error_weight * validation_error(updated_x_validate, y_validate,
+                                                                    corresponding_weights,
+                                                                    tf1,
+                                                                    tf2)
             error += settings.arch_penalty_weight * architecture_penalty
             error += settings.feature_penalty_weight * feature_vector_penalty(grasshoppers[i][0])
             print("| GOA fitness:", error)

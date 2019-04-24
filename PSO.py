@@ -114,13 +114,6 @@ def give_N_weight_chromosomes(n, no_of_input_neurons, no_of_hidden_neurons1, no_
     return np.array(weights)
 
 
-def cal_penalty(no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2):
-    penalty1 = (no_of_input_neurons + no_of_hidden_neurons1 + no_of_hidden_neurons2) / settings.max_no_of_neurons
-    penalty2 = 0
-    # return penalty1 + penalty2
-    return 0
-
-
 def model(x_train, y_train, no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2, no_of_output_neurons,
           tf1, tf2, guessed_weights=None):
     # initialize random population
@@ -143,8 +136,6 @@ def model(x_train, y_train, no_of_input_neurons, no_of_hidden_neurons1, no_of_hi
     local_best_swarm1 = [math.inf, -1]  # error, weight
     local_best_swarm2 = [math.inf, -1]  # error, weight
     local_best_swarm3 = [math.inf, -1]  # error, weight
-
-    total_penalty = cal_penalty(no_of_input_neurons, no_of_hidden_neurons1, no_of_hidden_neurons2)
 
     swarm_size = int(population_size / 3)
 

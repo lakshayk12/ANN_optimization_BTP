@@ -95,6 +95,7 @@ if __name__ == '__main__':
     dataset_path = "datasets/glass.csv"
     print(dataset_path.split('/')[1])
     x_train, x_test, y_train, y_test = get_dataset_ready(dataset_path)
+    print(len(x_test), "instances for testing.")
     x_train, x_test = scale(x_train, x_test)
     optimal_solution = GOA.algorithm(x_train, y_train)  # accuracy, grasshopper, corresponding_weights
     verify(x_test, y_test, optimal_solution)
