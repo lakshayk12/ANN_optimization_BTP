@@ -87,16 +87,20 @@ if __name__ == '__main__':
     start_time = time.time()
     # x_train = [[0, 0], [0, 1], [1, 0], [1, 1]]
     # y_train = [[1, 0], [0, 1], [0, 1], [0, 1]]
-    # settings.no_of_classes = 2
-    # x_train = np.array(x_train)
-    # y_train = np.array(y_train)
+    # settings.no_of_classes = 2.0
     # x_test = x_train
     # y_test = y_train
-    dataset_path = "datasets/glass.csv"
+    dataset_path = "datasets/BankNote_Authentication.csv"
     print(dataset_path.split('/')[1])
+    if settings.arch_penalty_weight is 0:
+        print("Running W/O PENALTY.")
+    else:
+        print("Running With PENALTY.")
+
     x_train, x_test, y_train, y_test = get_dataset_ready(dataset_path)
     print(len(x_test), "instances for testing.")
     x_train, x_test = scale(x_train, x_test)
+    # GOA
     optimal_solution = GOA.algorithm(x_train, y_train)  # accuracy, grasshopper, corresponding_weights
     verify(x_test, y_test, optimal_solution)
     print("\nExecution Time:", time.time() - start_time)
