@@ -7,7 +7,7 @@ def handle(s):
     return list.index(s)
 
 
-# boston = datasets.load_breast_cancer()
+# boston = datasets.load_iris()
 # x = boston.data
 # y = boston.target
 # y = np.reshape(y, newshape=(len(y), 1))
@@ -16,17 +16,19 @@ def handle(s):
 # data = np.concatenate((x, y), axis=1)
 # print(data.shape)
 # print(data[0])
-# np.savetxt("breast_cancer.csv", data, delimiter=',')
+# np.savetxt("iris.csv", data, delimiter=',')
+#
+# exit(0)
 
-a = np.genfromtxt('datasets/BankNote_Authentication.csv', delimiter=',', skip_header=True)
+a = np.genfromtxt('australian.dat', delimiter=' ', skip_header=False)
 print(a.shape)
 # b = np.genfromtxt('Hill_gValley_with_noise_Testing.csv', delimiter=',', skip_header=True)
 # print(b.shape)
 # c = np.concatenate((a, b), axis=0)
 # print(c.shape)
-np.savetxt("datasets/BankNote_Authentication_cln.csv", a, delimiter=',')
+np.savetxt("card.csv", a, delimiter=',')
 
-exit()
+exit(0)
 df = pd.read_csv('kr-vs-kp.csv', header=None)
 df.columns = ['buying', 'maint', 'doors', 'persons', 'lug_boot', 'safety', 'Y']
 unq = np.unique(np.array(df['buying']))
