@@ -90,7 +90,7 @@ if __name__ == '__main__':
     # settings.no_of_classes = 2.0
     # x_test = x_train
     # y_test = y_train
-    dataset_path = "datasets/BankNote_Authentication.csv"
+    dataset_path = "datasets/iris.csv"
     print(dataset_path.split('/')[1])
     if settings.arch_penalty_weight is 0:
         print("Running W/O PENALTY.")
