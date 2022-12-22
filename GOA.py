@@ -7,7 +7,7 @@ import settings
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
-minimum_no_of_hidden_neuron = 2
+minimum_no_of_hidden_neuron = 20
 
 
 def give_a_random_solution(no_of_features):
